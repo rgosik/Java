@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -73,6 +74,7 @@ public class BallManagerJDBC implements BallManager{
 		try {
 			addBallStmt.setString(1, ball.getName());
 			addBallStmt.setInt(2, ball.getYearOfProduction());
+			addBallStmt.setDouble(3, ball.getPrice());
 
 			count = addBallStmt.executeUpdate();
 
@@ -94,6 +96,7 @@ public class BallManagerJDBC implements BallManager{
 				b.setId(rs.getInt("id"));
 				b.setName(rs.getString("name"));
 				b.setYearOfProduction(rs.getInt("yearOfProduction"));
+				b.setPrice(rs.getDouble("price"));
 				balls.add(b);
 			}
 
@@ -101,6 +104,28 @@ public class BallManagerJDBC implements BallManager{
 			e.printStackTrace();
 		}
 		return balls;
+	}
+
+	public void addAllBalls(List<Ball> balls) {
+		try{
+			connection.setAutoCommit(false);
+			for(Ball ball : balls) {
+				addBallStmt.setString(1, ball.getName());
+				addBallStmt.setInt(2, ball.getYearOfProduction());
+				addBallStmt.setDouble(3, ball.getPrice());
+				addBallStmt.executeUpdate();				
+			}
+			connection.commit();
+			
+		} catch (SQLException exception){
+			try {
+				connection.rollback();
+			} catch (SQLException e){
+				e.printStackTrace();
+				//!!!! KEK
+			}
+		}
+		
 	}
 
 }
